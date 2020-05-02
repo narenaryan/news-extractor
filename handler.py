@@ -15,14 +15,6 @@ NEWS_API_ENDPOINT = "http://newsapi.org/v2/top-headlines"
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel('DEBUG')
 
-# Target native English speakers
-COUNTRIES = {
-    "au": "australia",
-    "ca": "canada",
-    "nz": "newzealand",
-    "gb": "uk",
-    "us": "usa"
-}
 
 class Topics(enum.Enum):
     top = enum.auto()
@@ -54,16 +46,23 @@ def handler(event, context):
     # This is to convert python uuid to postgres UUID string
     psycopg2.extras.register_uuid()
 
+    # Target native English speakers
+    countries = {
+        "au": "australia",
+        "ca": "canada",
+        "nz": "newzealand",
+        "gb": "uk",
+        "us": "usa"
+    }
     with psycopg2.connect("") as conn:
         with conn.cursor() as cur:
             # Fetch articles for countries
-            for country, db_schema in COUNTRIES.items():
+            for country, db_schema in countries.items():
                 article_count = ZERO
-     
                 # Fetch articles from different topics
                 for topic in Topics:
                     result = fetch_articles(country, topic.name)
-
+                    
                     if not result:
                         continue
 

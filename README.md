@@ -5,7 +5,7 @@ A python lambda function that extracts and stores news in Postgres Database.
 Requirements:
 -------------
 * Python 3.7
-* PostgreSQL > 10.0.0
+* PostgreSQL > 10.0.0 (Make sure you build psycopg2 dependencies for target Lambda environment)
 * AWS Lambda & Cloudwatch Event Rule (only required for automated schelduing)
 
 Configuration:

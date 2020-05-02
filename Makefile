@@ -4,4 +4,4 @@ zip:
 	zip -r ../newscollector.zip .
 
 dependencies:
-	pip install -r requirements.txt -t ./ && chmod -R 755 .
+	pip install --upgrade -r requirements.txt -t ./ && chmod -R 755 .
