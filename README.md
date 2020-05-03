@@ -1,6 +1,6 @@
 News Collector
 ==============
-A python lambda function that extracts and stores news in Postgres Database.
+A Python lambda function that extracts and stores news in PostgreSQL Database.
 
 Requirements:
 -------------
@@ -71,4 +71,4 @@ Zipping lambda function
 make zip
 
 
-To schedule this data extraction and store, one can use AWS cloudwatch event schedule or, cron job or, a celery task.
+Note: To schedule the data extraction and store, one can use AWS cloudwatch event schedule or, cron job or, a celery task.
