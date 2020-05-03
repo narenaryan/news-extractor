@@ -22,12 +22,13 @@ class Topics(enum.Enum):
     health = enum.auto()
     entertainment = enum.auto()
 
+
 def fetch_articles(country, topic_name) -> dict:
     payload = {
         "apiKey": os.environ.get("API_KEY"),
         "country": country
     }
-    
+
     if topic_name != 'top':
         payload['category'] = topic_name
 
@@ -62,21 +63,25 @@ def handler(event, context):
                 # Fetch articles from different topics
                 for topic in Topics:
                     result = fetch_articles(country, topic.name)
-                    
+
                     if not result:
                         continue
 
-                    now = datetime.now(pytz.utc) # Timezone aware UTC timestamp
+                    # Timezone aware UTC timestamp
+                    now = datetime.now(pytz.utc)
                     cur.execute(f"""
                         INSERT INTO {db_schema}.{topic.name} (id, news, created_at) VALUES (%s, %s, %s);
                         """, (uuid.uuid4(), json.dumps(result), now))
 
                     if result.get('status') == 'error':
-                        raise Exception("The API result from newsapi.org is not successful.", result.get('message'))
+                        raise Exception(
+                            "The API result from newsapi.org is not successful.", result.get('message'))
 
                     article_count += result.get('totalResults')
-                    LOGGER.info("Total: %d articles stored for topic: %s", result.get('totalResults'), topic.name)                   
-            LOGGER.info("Total: %d articles stored for country: %s", article_count, topic.name)
+                    LOGGER.info("Total: %d articles stored for topic: %s",
+                                result.get('totalResults'), topic.name)
+            LOGGER.info("Total: %d articles stored for country: %s",
+                        article_count, country)
 
     return {
         'statusCode': 200,
