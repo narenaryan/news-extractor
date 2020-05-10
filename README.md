@@ -2,6 +2,22 @@ News Collector
 ==============
 A Python lambda function that extracts and stores news in PostgreSQL Database.
 
+Program structure:
+==================
+The main program is:
+  
+  handler.py
+
+Helper functions like, deleting duplicate news, lies in:
+  
+  utils.py
+
+The program detects existing news by creating a digest. If there is an incoming news, it is checked against digest of last record in database. In this way, one can be sure, data is not duplicated irrespective of schedules.
+
+One can see countries and topics in:
+
+  meta.py
+
 Requirements:
 -------------
 * Python 3.7

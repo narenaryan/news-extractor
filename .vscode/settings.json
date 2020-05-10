@@ -1,0 +1,11 @@
+{
+  "python.linting.enabled": true,
+  "python.pythonPath": "/Users/naren/.virtualenv/playground/bin/python",
+  "python.linting.pylintEnabled": true,
+  "python.linting.auto": true,
+  "python.linting.pycodestyleArgs": [
+    "--line-length",
+    "80"
+  ],
+  "maven.view": "hierarchical"
+}

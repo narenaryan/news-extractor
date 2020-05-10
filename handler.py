@@ -16,7 +16,7 @@ from meta import Topics, Countries
 ZERO = 0
 NEWS_API_ENDPOINT = "http://newsapi.org/v2/top-headlines"
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel('DEBUG')
+LOGGER.setLevel('INFO')
 
 
 def fetch_articles(country, topic_name) -> dict:
@@ -66,13 +66,14 @@ def handler(event, context):
                     row = cur.fetchone()
 
                     if digest == row.get('digest'):
-                        LOGGER.warning("News already exists in database. Skipping creation.")
+                        LOGGER.info("News already exists in database. Skipping creation.")
+                        continue
 
                     # Timezone aware UTC timestamp
                     now = datetime.now(pytz.utc)
                     cur.execute(f"""
-                        INSERT INTO {country.value}.{topic.name} (id, news, created_at) VALUES (%s, %s, %s);
-                        """, (uuid.uuid4(), result_string, now))
+                        INSERT INTO {country.value}.{topic.name} (id, news, created_at, digest) VALUES (%s, %s, %s, %s);
+                        """, (uuid.uuid4(), result_string, now, digest))
 
                     if result.get('status') == 'error':
                         raise Exception(
@@ -81,8 +82,8 @@ def handler(event, context):
                     article_count += result.get('totalResults')
                     LOGGER.info("Total: %d articles stored for topic: %s",
                                 result.get('totalResults'), topic.name)
-            LOGGER.info("Total: %d articles stored for country: %s",
-                        article_count, country)
+                LOGGER.info("Total: %d articles stored for country: %s",
+                        article_count, country.value)
 
     return {
         'statusCode': 200,
