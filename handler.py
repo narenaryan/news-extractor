@@ -1,5 +1,6 @@
 import os
 import enum
+import hashlib
 import pytz
 import json
 import uuid
@@ -10,17 +11,12 @@ import requests
 import psycopg2
 import psycopg2.extras
 
+from meta import Topics, Countries
+
 ZERO = 0
 NEWS_API_ENDPOINT = "http://newsapi.org/v2/top-headlines"
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel('DEBUG')
-
-
-class Topics(enum.Enum):
-    top = enum.auto()
-    business = enum.auto()
-    health = enum.auto()
-    entertainment = enum.auto()
 
 
 def fetch_articles(country, topic_name) -> dict:
@@ -48,30 +44,35 @@ def handler(event, context):
     psycopg2.extras.register_uuid()
 
     # Target native English speakers
-    countries = {
-        "au": "australia",
-        "ca": "canada",
-        "nz": "newzealand",
-        "gb": "uk",
-        "us": "usa"
-    }
     with psycopg2.connect("") as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
             # Fetch articles for countries
-            for country, db_schema in countries.items():
+            for country in Countries:
                 article_count = ZERO
+                
                 # Fetch articles from different topics
                 for topic in Topics:
-                    result = fetch_articles(country, topic.name)
+                    result = fetch_articles(country.name.lower(), topic.name)
 
                     if not result:
                         continue
 
+                    result_string = json.dumps(result, sort_keys=True)
+                    byte_string = bytes(result_string, encoding="utf-8")
+                    digest = hashlib.sha256(byte_string).hexdigest()
+
+                    cur.execute(f"""SELECT digest FROM {country.value}.{topic.name} ORDER BY created_at DESC LIMIT 1;
+                    """)
+                    row = cur.fetchone()
+
+                    if digest == row.get('digest'):
+                        LOGGER.warning("News already exists in database. Skipping creation.")
+
                     # Timezone aware UTC timestamp
                     now = datetime.now(pytz.utc)
                     cur.execute(f"""
-                        INSERT INTO {db_schema}.{topic.name} (id, news, created_at) VALUES (%s, %s, %s);
-                        """, (uuid.uuid4(), json.dumps(result), now))
+                        INSERT INTO {country.value}.{topic.name} (id, news, created_at) VALUES (%s, %s, %s);
+                        """, (uuid.uuid4(), result_string, now))
 
                     if result.get('status') == 'error':
                         raise Exception(
