@@ -36,7 +36,7 @@ def remove_duplicates():
 
 
 def recalculate_digests():
-    """This function calculates hash for data and updates database.
+    """This function calculates digest for data and updates database.
     It uses python's hashlib SHA 256 to generate hex digest.
     """
     with psycopg2.connect("") as conn:
