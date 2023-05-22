@@ -1,4 +1,4 @@
 psycopg2-binary==2.8.5
-requests==2.23.0
+requests==2.31.0
 pytz==2020.1
 
